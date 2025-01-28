@@ -1,0 +1,42 @@
+import pygame
+pygame.init()
+
+gd = pygame.display.set_mode((1920, 1080))
+clock = pygame.time.Clock()
+pygame.display.set_caption("Clicker game")
+
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+
+maurice = False
+
+class Button:
+    def __init__(self):
+        self.self = self
+
+    def draw(self):
+        pygame.draw.rect(gd, GREEN, pygame.Rect(30, 30, 60, 60))
+
+button = Button()
+
+running = True
+while running:
+    gd.fill(WHITE)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            maurice = True
+        if event.type == pygame.MOUSEBUTTONUP:
+            maurice = False
+
+    if maurice:
+        button.draw()
+
+    pygame.display.flip()
+    pygame.display.update()
+    clock.tick(60)
+
+pygame.quit()
