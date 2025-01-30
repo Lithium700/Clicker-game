@@ -1,0 +1,56 @@
+import pygame
+pygame.init()
+
+width, height = 1920, 1080
+
+gd = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+pygame.display.set_caption("Clicker game")
+
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+
+# UI variables
+buttonSize = 75
+
+
+def drawUI():
+    print("draw UI")
+
+class Button:
+    def __init__(self):
+        self.self = self
+
+    def draw(self):
+        pygame.draw.rect(gd, GREEN, pygame.Rect(width/2, height/2, buttonSize, buttonSize))
+
+    def click(self):
+        pygame.draw.rect(gd, RED, pygame.Rect(width/2, height/2, buttonSize, buttonSize))
+
+    def calculatePoints(self):
+        print("bereken het aantal punten")
+
+button = Button()
+
+running = True
+while running:
+    gd.fill(WHITE)
+    for event in pygame.event.get():
+
+        if event.type == pygame.QUIT:
+            running = False
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            currentGen.KEYS.append(1)
+        if event.type == pygame.MOUSEBUTTONUP:
+            currentGen.KEYS.remove(1)
+
+                    
+    button.draw()
+
+    pygame.display.flip()
+    pygame.display.update()
+    clock.tick(60)
+
+pygame.quit()
