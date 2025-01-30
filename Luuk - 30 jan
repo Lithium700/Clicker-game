@@ -1,0 +1,56 @@
+import pygame
+pygame.init()
+
+pygame.font.init() # you have to call this at the start, 
+                   # if you want to use this module.
+
+width, height = 1920, 1080
+
+gd = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+pygame.display.set_caption("Clicker game")
+
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+my_font = pygame.font.SysFont('Comic Sans MS', 30)
+maurice = False
+
+def drawUI():
+    text_surface = my_font.render('Some Text', False, (0, 0, 0))
+    gd.blit(text_surface, (0,0))
+
+class Button:
+    def __init__(self):
+        self.self = self
+
+    def draw(self):
+        pygame.draw.rect(gd, GREEN, pygame.Rect(30, 30, 60, 60))
+
+    def calculatePoints(self):
+        print("bereken het aantal punten")
+
+button = Button()
+
+running = True
+while running:
+    gd.fill(WHITE)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            maurice = True
+        if event.type == pygame.MOUSEBUTTONUP:
+            maurice = False
+
+    if maurice:
+        button.draw()
+
+    drawUI()
+
+    pygame.display.flip()
+    pygame.display.update()
+    clock.tick(60)
+
+pygame.quit()
