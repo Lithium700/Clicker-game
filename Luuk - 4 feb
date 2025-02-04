@@ -1,0 +1,63 @@
+import pygame
+pygame.init()
+pygame.font.init()
+
+width, height = 1920, 1080
+
+gd = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+pygame.display.set_caption("Clicker game")
+
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+
+# UI variables
+buttonSize = 75
+font = pygame.font.SysFont('Comic Sans MS', 30)
+
+# Score variables
+points = 0
+
+def drawUI():
+    global points
+    text_surface = font.render('Points: ' + str(points), False, (0, 0, 0))
+    gd.blit(text_surface, (width/2,0))
+
+class Button:
+    def __init__(self):
+        self.self = self
+
+    def draw(self):
+        pygame.draw.rect(gd, GREEN, pygame.Rect(width/2, height/2, buttonSize, buttonSize))
+
+    def click(self):
+        pygame.draw.rect(gd, RED, pygame.Rect(width/2, height/2, buttonSize, buttonSize))
+
+    def checkClick(self):
+        pos = pygame.mouse.get_pos()
+
+    def calculatePoints(self):
+        global points
+        points +=1
+
+button = Button()
+
+running = True
+while running:
+    gd.fill(WHITE)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            button.checkClick()
+
+                    
+    button.draw()
+    drawUI()
+
+    pygame.display.flip()
+    pygame.display.update()
+    clock.tick(60)
+
+pygame.quit()
