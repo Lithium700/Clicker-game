@@ -1,0 +1,96 @@
+import pygame
+pygame.init()
+pygame.font.init()
+
+width, height = 1920, 1080
+
+gd = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+pygame.display.set_caption("Clicker game")
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+
+# UI variables
+buttonX, buttonY = 400, 200
+font = pygame.font.SysFont('Comic Sans MS', 60)
+
+# Score variables
+points = 0
+
+# Tictactoe
+buttons = []
+turn = 'X'
+
+def text(textInput, position):
+    global points
+    text_surface = font.render(textInput, False, BLACK)
+    text_width, text_height = text_surface.get_size()
+    text_pos = (position[0] - text_width / 2, position[1] - text_height / 2)
+    gd.blit(text_surface, text_pos)
+
+def TicTacToe(pos, size):
+    global buttons
+    for y in range(3):
+        for x in range(3): 
+            buttons.append(Button((958+(x-1)*290,542+(y-1)*290),(260,260), '', WHITE))
+    
+class Button:
+    def __init__(self, pos, size, buttonText, color):
+       self.self = self
+       self.pos = pos
+       self.size = size
+       self.buttonText = buttonText
+       self.color = color
+
+    def draw(self):
+        pygame.draw.rect(gd, self.color, pygame.Rect(self.pos[0]-self.size[0]/2, self.pos[1]-self.size[1]/2, self.size[0], self.size[1]))
+
+    def drawText(self):
+        text(self.buttonText, self.pos)
+
+    def checkClick(self):
+        global turn
+        mousePos = pygame.mouse.get_pos()
+        if (mousePos[0] > self.pos[0] - self.size[0]/2 and mousePos[0] < self.pos[0] + self.size[0]/2 and mousePos[1] > self.pos[1] - self.size[1]/2 and mousePos[1] < self.pos[1] + self.size[1]/2):  
+            if self in buttons:
+                if turn == 'X':
+                    self.buttonText = 'X'
+                    turn = 'O'
+                else:
+                    self.buttonText = 'O'
+                    turn = 'X'
+            else:
+                self.calculatePoints()
+        
+    def calculatePoints(self):
+        global points
+        points+=1
+
+button = Button((width/2, height/2), (buttonX, buttonY), 'loempia', GREEN)
+TicTacToe((width/2, height/2), (750, 750))
+
+running = True
+while running:
+    gd.fill(WHITE)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            button.checkClick()
+            for i in range(len(buttons)):
+                buttons[i].checkClick()
+            
+    button.draw()
+    #button.drawText()
+    pygame.draw.rect(gd, BLACK, pygame.Rect(510,90,900,900))
+    for i in range(len(buttons)):
+        buttons[i].draw()
+        buttons[i].drawText()
+
+    pygame.display.flip()
+    pygame.display.update()
+    clock.tick(60)
+pygame.quit()
