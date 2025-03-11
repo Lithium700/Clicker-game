@@ -1,0 +1,89 @@
+import pygame
+pygame.init()
+pygame.font.init()
+
+width, height = 1920, 1080
+
+gd = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+pygame.display.set_caption("Clicker game")
+
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+BLACK = (0, 0, 0)
+
+# UI variables
+buttonX, buttonY = 400, 200
+font = pygame.font.SysFont('Comic Sans MS', 60)
+
+upgradeButtons = []
+
+# Score variables
+points = 0
+
+def draw_text(input, position):
+    text_surface = font.render(input, False, BLACK)
+    text_width, text_height = text_surface.get_size()
+    text_pos = (position[0] - text_width / 2, position[1] - text_height / 2)
+    gd.blit(text_surface, text_pos)
+
+def text(input, position):
+    global points
+    text_surface = font.render(input, False, (0, 0, 0))
+    text_width, text_height = text_surface.get_size()
+    text_pos = (position[0] - text_width / 2, position[1] - text_height / 2)
+    gd.blit(text_surface, text_pos)
+
+def draw_points():
+    draw_text("Points: " + str(points), (width / 2, 50))
+
+class Button:
+    def __init__(self, pos, size, buttonText, upgrade):
+       self.self = self
+       self.pos = pos
+       self.size = size
+       self.buttonText = buttonText
+
+    def draw(self):
+        pygame.draw.rect(gd, GREEN, pygame.Rect(self.pos[0]-self.size[0]/2, self.pos[1]-self.size[1]/2, self.size[0], self.size[1]))
+
+    def drawText(self):
+        text(self.buttonText, self.pos)
+
+    def checkClick(self):
+        mousePos = pygame.mouse.get_pos()
+        if (mousePos[0] > self.pos[0] - self.size[0]/2 and mousePos[0] < self.pos[0] + self.size[0]/2 and mousePos[1] > self.pos[1] - self.size[1]/2 and mousePos[1] < self.pos[1] + self.size[1]/2):  
+            self.calculatePoints()
+        
+    def calculatePoints(self):
+        global points
+        points+=1
+        print(points)
+
+button = Button((width/2, height/2), (buttonX, buttonY), 'Click!')
+upgradeButtons.append(Button((1700, 340), (400, 120), 'Upgrade 1'))
+upgradeButtons.append(Button((1700, 540), (400, 120), 'Upgrade 2'))
+upgradeButtons.append(Button((1700, 740), (400, 120), 'Upgrade 3'))
+
+running = True
+while running:
+    gd.fill(WHITE)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            button.checkClick()
+    
+    draw_points()
+    button.draw()
+    button.drawText()
+
+    for i in range(len(upgradeButtons)):
+        upgradeButtons[i].draw()
+        upgradeButtons[i].drawText()
+
+    pygame.display.flip()
+    pygame.display.update()
+    clock.tick(60)
+pygame.quit()
