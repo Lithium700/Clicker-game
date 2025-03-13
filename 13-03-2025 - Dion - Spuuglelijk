@@ -1,0 +1,126 @@
+import pygame
+pygame.init()
+pygame.font.init()
+
+width, height = 1920, 1080
+
+gd = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+pygame.display.set_caption("Tic Tac Toe")
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+
+winning_combinations = [
+    [0, 1, 2], 
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6], 
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8], 
+    [2, 4, 6]
+]
+
+# UI variables
+font = pygame.font.SysFont('Comic Sans MS', 60)
+
+# TTT
+buttons = []
+TTTButtons = []
+turn = 'X'
+running = True
+runTTT = False
+
+def text(textInput, position):
+    text_surface = font.render(textInput, False, BLACK)
+    text_width, text_height = text_surface.get_size()
+    text_pos = (position[0] - text_width / 2, position[1] - text_height / 2)
+    gd.blit(text_surface, text_pos)
+
+def TicTacToe():
+    global TTTButtons
+    for y in range(3):
+        for x in range(3): 
+            TTTButtons.append(Button((958+(x-1)*290,542+(y-1)*290),(260,260), '', WHITE))
+    
+class Button:
+    def __init__(self, pos, size, buttonText, color):
+       self.pos = pos
+       self.size = size
+       self.buttonText = buttonText
+       self.color = color
+
+    def draw(self):
+        pygame.draw.rect(gd, self.color, pygame.Rect(self.pos[0]-self.size[0]/2, self.pos[1]-self.size[1]/2, self.size[0], self.size[1]))
+
+    def drawText(self):
+        text(self.buttonText, self.pos)
+
+    def checkClick(self):
+        global turn, running, tttButton, runTTT
+        mousePos = pygame.mouse.get_pos()
+        if (mousePos[0] > self.pos[0] - self.size[0]/2 and mousePos[0] < self.pos[0] + self.size[0]/2 and mousePos[1] > self.pos[1] - self.size[1]/2 and mousePos[1] < self.pos[1] + self.size[1]/2):  
+            if self in TTTButtons:
+                if self.buttonText == '':
+                    if turn == 'X':
+                        self.buttonText = 'X'
+                        turn = 'O'
+                    else:
+                        self.buttonText = 'O'
+                        turn = 'X'
+                    result = checkWinner()
+                    if result:
+                        if result == "Draw":
+                            print("Draw")
+                        else:
+                            print("Winner")
+                        running = False
+            if self == tttButton:
+                runTTT = not runTTT
+
+def checkWinner():
+    for combo in winning_combinations:
+        if (TTTButtons[combo[0]].buttonText == TTTButtons[combo[1]].buttonText == TTTButtons[combo[2]].buttonText 
+            and TTTButtons[combo[0]].buttonText != ''):
+            return TTTButtons[combo[0]].buttonText
+
+    if all(button.buttonText != '' for button in TTTButtons):
+        return "Draw"
+    return None
+
+tttButton = Button((1650,900),(400,260), 'TicTacToe', RED)
+
+TicTacToe()
+while running:
+    gd.fill(WHITE)
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            for button in buttons:
+                button.checkClick()
+            for button in TTTButtons:
+                button.checkClick()
+            tttButton.checkClick()
+    
+    for button in buttons:
+        button.draw()
+        button.drawText()
+
+    tttButton.draw()
+    tttButton.drawText()
+
+    if runTTT:
+        pygame.draw.rect(gd, BLACK, pygame.Rect(510,90,900,900))
+        for button in TTTButtons:
+            button.draw()
+            button.drawText()
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
