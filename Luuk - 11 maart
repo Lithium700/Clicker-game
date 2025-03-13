@@ -39,7 +39,7 @@ def draw_points():
     draw_text("Points: " + str(points), (width / 2, 50))
 
 class Button:
-    def __init__(self, pos, size, buttonText, upgrade):
+    def __init__(self, pos, size, buttonText):
        self.self = self
        self.pos = pos
        self.size = size
