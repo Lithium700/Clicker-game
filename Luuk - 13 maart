@@ -78,9 +78,9 @@ class Button:
                 print(f"Punten: {points}")
 
 button = Button((width / 2, height / 2), (buttonX, buttonY), 'Click!')
-upgradeButtons.append(Button((1650, 340), (550, 120), 'Auto-click (500)', is_upgrade=True))
-upgradeButtons.append(Button((1650, 540), (550, 120), 'Upgrade click (1000)', is_upgrade=True))
-upgradeButtons.append(Button((1650, 740), (550, 120), 'Upgrade 3', is_upgrade=True))
+upgradeButtons.append(Button((1600, 340), (600, 120), 'Auto-click (500)', is_upgrade=True))
+upgradeButtons.append(Button((1600, 540), (600, 120), 'Upgrade click (1000)', is_upgrade=True))
+upgradeButtons.append(Button((1600, 740), (600, 120), 'Upgrade 3', is_upgrade=True))
 
 running = True
 while running:
