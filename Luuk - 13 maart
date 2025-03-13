@@ -1,0 +1,112 @@
+import pygame
+
+pygame.init()
+pygame.font.init()
+
+width, height = 1920, 1080
+
+gd = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+pygame.display.set_caption("Clicker game")
+
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+BLACK = (0, 0, 0)
+
+# UI variables
+buttonX, buttonY = 400, 200
+font = pygame.font.SysFont('Comic Sans MS', 60)
+
+upgradeButtons = []
+
+# Score variables
+points = 0
+upgrade1_level = 0  # Houdt bij hoe vaak Upgrade 1 is gekocht
+upgrade1_timer = 0  # Timer voor automatische punten
+upgrade2_level = 1  # Houdt bij hoeveel extra punten per klik (start op 1)
+
+def draw_text(input, position):
+    text_surface = font.render(input, False, BLACK)
+    text_width, text_height = text_surface.get_size()
+    text_pos = (position[0] - text_width / 2, position[1] - text_height / 2)
+    gd.blit(text_surface, text_pos)
+
+def text(input, position):
+    global points
+    text_surface = font.render(input, False, (0, 0, 0))
+    text_width, text_height = text_surface.get_size()
+    text_pos = (position[0] - text_width / 2, position[1] - text_height / 2)
+    gd.blit(text_surface, text_pos)
+
+def draw_points():
+    draw_text("Points: " + str(points), (width / 2, 50))
+
+class Button:
+    def __init__(self, pos, size, buttonText, is_upgrade=False):
+        self.pos = pos
+        self.size = size
+        self.buttonText = buttonText
+        self.is_upgrade = is_upgrade  # Geeft aan of het een upgrade-knop is
+
+    def draw(self):
+        pygame.draw.rect(gd, GREEN, pygame.Rect(self.pos[0] - self.size[0] / 2, self.pos[1] - self.size[1] / 2, self.size[0], self.size[1]))
+        text(self.buttonText, self.pos)
+
+    def checkClick(self):
+        global points, upgrade1_level, upgrade2_level
+
+        mousePos = pygame.mouse.get_pos()
+        if (self.pos[0] - self.size[0] / 2 < mousePos[0] < self.pos[0] + self.size[0] / 2 and
+            self.pos[1] - self.size[1] / 2 < mousePos[1] < self.pos[1] + self.size[1] / 2):
+
+            if self.is_upgrade:
+                if self.buttonText == "Auto-click (500)":  # Upgrade 1
+                    if points >= 500:
+                        points -= 500
+                        upgrade1_level += 1  # Upgrade level stijgt
+                        print(f"Auto-click gekocht! Niveau: {upgrade1_level}. Nu krijg je {upgrade1_level} punten per seconde.")
+
+                elif self.buttonText == "Upgrade 2":  # Upgrade 2
+                    if points >= 1000:
+                        points -= 1000
+                        upgrade2_level += 1  # Extra punt per klik stijgt
+                        print(f"Upgrade 2 gekocht! Nu krijg je {upgrade2_level} punten per klik.")
+
+            else:
+                points += upgrade2_level  # Extra punten per klik
+                print(f"Punten: {points}")
+
+button = Button((width / 2, height / 2), (buttonX, buttonY), 'Click!')
+upgradeButtons.append(Button((1650, 340), (550, 120), 'Auto-click (500)', is_upgrade=True))
+upgradeButtons.append(Button((1650, 540), (550, 120), 'Upgrade click (1000)', is_upgrade=True))
+upgradeButtons.append(Button((1650, 740), (550, 120), 'Upgrade 3', is_upgrade=True))
+
+running = True
+while running:
+    gd.fill(WHITE)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            button.checkClick()
+            for upgrade in upgradeButtons:
+                upgrade.checkClick()
+
+    # **Automatische punten toevoegen afhankelijk van upgrade1_level**
+    if upgrade1_level > 0:
+        if pygame.time.get_ticks() - upgrade1_timer >= 1000:  # Elke seconde
+            points += upgrade1_level  # Extra punten per upgrade-niveau
+            upgrade1_timer = pygame.time.get_ticks()  # Reset timer
+
+    draw_points()
+    button.draw()
+
+    for upgrade in upgradeButtons:
+        upgrade.draw()
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
