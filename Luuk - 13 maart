@@ -67,7 +67,7 @@ class Button:
                         upgrade1_level += 1  # Upgrade level stijgt
                         print(f"Auto-click gekocht! Niveau: {upgrade1_level}. Nu krijg je {upgrade1_level} punten per seconde.")
 
-                elif self.buttonText == "Upgrade 2":  # Upgrade 2
+                elif self.buttonText == "Upgrade click (1000)":  # Upgrade 2
                     if points >= 1000:
                         points -= 1000
                         upgrade2_level += 1  # Extra punt per klik stijgt
