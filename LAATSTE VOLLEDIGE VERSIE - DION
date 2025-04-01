@@ -1,0 +1,263 @@
+import pygame
+import random  # Voor willekeurige kaarten
+
+pygame.init()
+pygame.font.init()
+
+width, height = 1920, 1080
+
+gd = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+pygame.display.set_caption("Clicker game")
+
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+BLACK = (0, 0, 0)
+
+# UI variables
+buttonX, buttonY = 400, 200
+font = pygame.font.SysFont('Comic Sans MS', 60)
+
+upgradeButtons = []
+
+# Score variables
+points = 0
+upgrade1_level = 0  # Houdt bij hoe vaak Upgrade 1 is gekocht
+upgrade1_timer = 0  # Timer voor automatische punten
+upgrade2_level = 1  # Houdt bij hoeveel extra punten per klik (start op 1)
+
+def draw_text(input, position, font_size=60):
+    font = pygame.font.SysFont('Comic Sans MS', font_size)
+    text_surface = font.render(input, False, BLACK)
+    text_width, text_height = text_surface.get_size()
+    text_pos = (position[0] - text_width / 2, position[1] - text_height / 2)
+    gd.blit(text_surface, text_pos)
+
+def draw_points():
+    draw_text("Points: " + str(points), (width / 2, 50))
+
+class Button:
+    def __init__(self, pos, size, buttonText, is_upgrade=False, is_minigame=False):
+        self.pos = pos
+        self.size = size
+        self.buttonText = buttonText
+        self.is_upgrade = is_upgrade
+        self.is_minigame = is_minigame
+
+    def draw(self):
+        pygame.draw.rect(gd, GREEN, pygame.Rect(self.pos[0] - self.size[0] / 2, self.pos[1] - self.size[1] / 2, self.size[0], self.size[1]))
+        draw_text(self.buttonText, self.pos)
+
+    def checkClick(self):
+        global points, upgrade1_level, upgrade2_level
+        mousePos = pygame.mouse.get_pos()
+        if (self.pos[0] - self.size[0] / 2 < mousePos[0] < self.pos[0] + self.size[0] / 2 and
+            self.pos[1] - self.size[1] / 2 < mousePos[1] < self.pos[1] + self.size[1] / 2):
+            if self.is_minigame:
+                if self.buttonText == "Tic-Tac-Toe":
+                    tic_tac_toe()
+                elif self.buttonText == "Blackjack":
+                    blackjack()
+            elif self.is_upgrade:
+                if self.buttonText == "Auto-click (500)" and points >= 500:
+                    points -= 500
+                    upgrade1_level += 1
+                elif self.buttonText == "Upgrade click (1000)" and points >= 1000:
+                    points -= 1000
+                    upgrade2_level += 1
+            else:
+                points += upgrade2_level
+
+# Tic-Tac-Toe minigame
+def tic_tac_toe():
+    global points
+    board = [' '] * 9
+    current_player = 'X'
+    game_over = False
+
+    def draw_board():
+        gd.fill(WHITE)
+        for i in range(3):
+            for j in range(3):
+                pygame.draw.rect(gd, BLACK, (100 + j * 300, 100 + i * 300, 300, 300), 3)
+                draw_text(board[i * 3 + j], (250 + j * 300, 250 + i * 300), font_size=120)
+        pygame.display.flip()
+
+    def check_winner():
+        for i in range(3):
+            if board[i * 3] == board[i * 3 + 1] == board[i * 3 + 2] != ' ':
+                return board[i * 3]
+            if board[i] == board[i + 3] == board[i + 6] != ' ':
+                return board[i]
+        if board[0] == board[4] == board[8] != ' ':
+            return board[0]
+        if board[2] == board[4] == board[6] != ' ':
+            return board[2]
+        if ' ' not in board:
+            return 'Tie'
+        return None
+
+    while not game_over:
+        draw_board()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mx, my = pygame.mouse.get_pos()
+                row = (my - 100) // 300
+                col = (mx - 100) // 300
+                index = row * 3 + col
+                if 0 <= row < 3 and 0 <= col < 3 and board[index] == ' ':
+                    board[index] = current_player
+                    winner = check_winner()
+                    if winner:
+                        game_over = True
+                        if winner == 'X':
+                            points += 200
+                            draw_text(f"X wins! Your current points: {points}", (width / 2, height - 100))
+                        elif winner == 'O':
+                            points -= 100
+                            draw_text(f"O wins! Your current points: {points}", (width / 2, height - 100))
+                        else:
+                            draw_text(f"Tie! Your current points: {points}", (width / 2, height - 100))
+                    current_player = 'O' if current_player == 'X' else 'X'
+        
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.time.wait(2000)  # Laat het resultaat even zien voor 2 seconden
+    return  # Terug naar het hoofdscherm
+
+# Blackjack minigame
+def blackjack():
+    global points
+    deck = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'] * 4
+    random.shuffle(deck)
+    
+    def calculate_hand_value(hand):
+        value = 0
+        ace_count = 0
+        for card in hand:
+            if card in ['J', 'Q', 'K']:
+                value += 10
+            elif card == 'A':
+                value += 11
+                ace_count += 1
+            else:
+                value += int(card)
+        
+        while value > 21 and ace_count > 0:
+            value -= 10
+            ace_count -= 1
+        return value
+
+    player_hand = [deck.pop(), deck.pop()]
+    dealer_hand = [deck.pop(), deck.pop()]
+    hide_dealer = True  # Voeg deze regel toe om de dealer's kaarten in het begin te verbergen
+
+    game_over = False
+    hit_button = Button((width / 2 - 200, height - 100), (200, 100), 'Hit', is_minigame=True)
+    stand_button = Button((width / 2 + 200, height - 100), (200, 100), 'Stand', is_minigame=True)
+
+    while not game_over:
+        gd.fill(WHITE)
+        draw_text("Blackjack", (width / 2, 100), font_size=100)
+        draw_text(f"Your hand: {', '.join(player_hand)}", (width / 2, 250), font_size=60)
+        
+        # Toon de dealer's hand als de speler kiest om te Stand
+        if not hide_dealer:
+            draw_text(f"Dealer's hand: {', '.join(dealer_hand)}", (width / 2, 350), font_size=60)
+        else:
+            draw_text(f"Dealer's hand: {dealer_hand[0]}, ?", (width / 2, 350), font_size=60)
+
+        player_value = calculate_hand_value(player_hand)
+        dealer_value = calculate_hand_value(dealer_hand)
+
+        draw_text(f"Your score: {player_value}", (width / 2, 450), font_size=60)
+
+        if player_value > 21:
+            points -= 200
+            draw_text("You lose! You lost 200 points.", (width / 2, 550), font_size=60)
+            draw_text(f"Dealer's final score: {dealer_value}", (width / 2, 620), font_size=60)
+            game_over = True
+        elif player_value == 21:
+            points += 500
+            draw_text("Blackjack! You win 500 points!", (width / 2, 550), font_size=60)
+            draw_text(f"Dealer's final score: {dealer_value}", (width / 2, 620), font_size=60)
+            game_over = True
+
+        # Tekenen van de knoppen
+        hit_button.draw()
+        stand_button.draw()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mx, my = pygame.mouse.get_pos()
+                if hit_button.pos[0] - hit_button.size[0] / 2 < mx < hit_button.pos[0] + hit_button.size[0] / 2 and \
+                   hit_button.pos[1] - hit_button.size[1] / 2 < my < hit_button.pos[1] + hit_button.size[1] / 2:
+                    player_hand.append(deck.pop())  # Trek een kaart
+                    if calculate_hand_value(player_hand) > 21:
+                        points -= 200
+                        draw_text("You lose! You lost 200 points.", (width / 2, 550), font_size=60)
+                        draw_text(f"Dealer's final score: {dealer_value}", (width / 2, 620), font_size=60)
+                        game_over = True
+                elif stand_button.pos[0] - stand_button.size[0] / 2 < mx < stand_button.pos[0] + stand_button.size[0] / 2 and \
+                     stand_button.pos[1] - stand_button.size[1] / 2 < my < stand_button.pos[1] + stand_button.size[1] / 2:
+                    hide_dealer = False  # Toon de dealer zijn kaarten wanneer Stand wordt geklikt
+                    game_over = True
+                    while calculate_hand_value(dealer_hand) < 17:
+                        dealer_hand.append(deck.pop())  # Dealer trekt kaarten totdat hij minimaal 17 heeft
+                    dealer_value = calculate_hand_value(dealer_hand)
+                    if dealer_value > 21 or player_value > dealer_value:
+                        points += 500
+                        draw_text("You win 500 points!", (width / 2, 650), font_size=60)
+                    elif player_value < dealer_value:
+                        points -= 200
+                        draw_text("You lose! You lost 200 points.", (width / 2, 650), font_size=60)
+                    else:
+                        draw_text("It's a tie!", (width / 2, 650), font_size=60)
+
+                    draw_text(f"Dealer's final score: {dealer_value}", (width / 2, 720), font_size=60)
+
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.time.wait(2000)  # Laat het resultaat even zien voor 2 seconden
+    return  # Terug naar het hoofdscherm
+
+
+
+
+button = Button((width / 2, height / 2), (buttonX, buttonY), 'Click!')
+upgradeButtons.append(Button((1600, 340), (600, 120), 'Auto-click (500)', is_upgrade=True))
+upgradeButtons.append(Button((1600, 540), (600, 120), 'Upgrade click (1000)', is_upgrade=True))
+upgradeButtons.append(Button((200, height - 100), (300, 100), 'Tic-Tac-Toe', is_minigame=True))
+upgradeButtons.append(Button((200, height - 250), (300, 100), 'Blackjack', is_minigame=True))
+
+running = True
+while running:
+    gd.fill(WHITE)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            button.checkClick()
+            for upgrade in upgradeButtons:
+                upgrade.checkClick()
+    if upgrade1_level > 0 and pygame.time.get_ticks() - upgrade1_timer >= 1000:
+        points += upgrade1_level
+        upgrade1_timer = pygame.time.get_ticks()
+    draw_points()
+    button.draw()
+    for upgrade in upgradeButtons:
+        upgrade.draw()
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
